@@ -1,80 +1,44 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include "heapsort.h"
+#include "funcao_comparar.h"
 
-void merge(int v[], int a, int half, int b, int *comp) {
-    int tam1 = half-a+1;
-    int tam2 = b-half;
-    int esq[tam1], dir[tam2];
+void mHeap(ItemVetor *v, int n, int j, int*c){
+    int l = 1 + 2*j;
+    int r = 2 + 2*j;
+    int max = j;
     
-    for (int i=0; i<tam1; i++){
-        esq[i] = v[a+i];
+    if(l<n || r<n){
+        *c = *c + 1;
     }
-    for (int j=0; j<tam2; j++){
-        dir[j] = v[half+1+j];
+    if(l<n && r<n){
+        *c = *c + 1;
     }
-    int i, j, k;
-    i = 0;
-    j = 0;
-    k = a;
-    while (i<tam1 && j<tam2){ //Aqui serão realizadas as comparações entre os elementos dos subvetores que serão mesclados e o resultado será passado por ponteiro
-        *comp = *comp+1;
-        if (esq[i]<=dir[j]){
-            v[k] = esq[i];
-            i++;
-        }
-        else{
-            v[k] = dir[j];
-            j++;
-        }
-        k++;
+    if(comparar(v[l], v[max])>0 && l<n){
+        max = l;
     }
-    while (i<tam1){ //Aqui alteramos o vetor segundo os elementos do subvetor menor que a metade
-        v[k] = esq[i];
-        i++;
-        k++;
+    if(comparar(v[r], v[max])>0 && r<n){
+        max = r;
     }
-    while (j<tam2){ //Aqui alteramos o vetor segundo os elementos do subvetor maior que a metade
-        v[k] = dir[j];
-        j++;
-        k++;
+    if(max!=j){
+        ItemVetor tmpV = v[j];
+        v[j] = v[max];
+        v[max] = tmpV;
+        mHeap(v, n, max, c);
     }
 }
 
-void mergeSort(int v[], int a, int b, int *comp) {
-    if(a < b){ //Aqui realizamos a "extração" dos subvetores a serem mesclados
-        int half = a+(b-a)/2;
-        mergeSort(v, a, half, comp);
-        mergeSort(v, half+1, b, comp);
-        merge(v, a, half, b, comp);
+int heapsort(ItemVetor *v, int n) {
+    if(n<=1){
+        return 0;
     }
-}
-
-int main() {
-    int size;
-    scanf("%d", &size);
-    int *comp = malloc(sizeof(int));
-    *comp = 0;
-    if(size!=0){
-        int* v=(int*) malloc(sizeof(int) * size);
-        int i, num;
-        for(i=0; i<size; i++){
-            scanf("%d", &num);
-            v[i]=num;
-        }
-        mergeSort(v, 0, size-1, comp);
-        for(i=0; i<size; i++){
-            if(i==size-1){
-                printf("%d", v[i]);
-                break;
-            }
-        printf("%d ", v[i]);
-        }
-        free(v);
+    int c=0;
+    for(int i=(n/2)-1; i>-1; i--){
+        mHeap(v, n, i, &c);
     }
-    printf("\n");
-    int comparac = *comp;
-    printf("Comparacoes: %d\n", comparac);
-    free(comp);
-    
-    return 0;
+    for(int j=n-1; j>0; j--){
+        ItemVetor tmpV = v[j];
+        v[j] = v[0];
+        v[0] = tmpV;
+        mHeap(v, j, 0, &c);
+    }
+    return c;
 }
